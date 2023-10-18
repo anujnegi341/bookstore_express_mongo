@@ -51,6 +51,35 @@ app.post('/signup', async (req, res) => {
     }
 });
 
+app.post("/login", async (req, res) => {
+
+    let { email, password } = req.body;
+
+    let existingUser;
+    existingUser = await User.findOne({ email: email });
+    if (!existingUser || existingUser.password != password) {
+      throw new Error("Wrong details please check at once");
+    }
+
+    let token;
+    //Creating jwt token
+    token = jwt.sign(
+      { userId: existingUser.id, email: existingUser.email },
+      jwtSecret,
+      { expiresIn: "1h" }
+    );
+
+    res.status(200)
+    .json({
+        success: true,
+        data: {
+            userId: existingUser.id,
+            email: existingUser.email,
+            token: token,
+        },
+    });
+});
+
 app.get('/accessResource', (req, res) => {
     try {
         const token = req.headers.authorization.split(' ')[1];
