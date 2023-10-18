@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { reviewSchema } from "./reviewModel.js";
 
 const bookSchema = mongoose.Schema(
     {
@@ -14,6 +15,7 @@ const bookSchema = mongoose.Schema(
             type: Number,
             require: true
         },
+        review_list: [reviewSchema],
     },
     {
         timestamps: true
