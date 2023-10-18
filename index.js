@@ -1,7 +1,9 @@
 import express from "express";
 import mongoose from "mongoose";
-import { PORT, mongodbUrl } from "./config.js";
+import { PORT, jwtSecret, mongodbUrl } from "./config.js";
 import booksRoute from "./routes/booksRoute.js";
+import { User } from "./models/userModel.js";
+import jwt from "jsonwebtoken";
 import cors from 'cors';
 
 const app = express();
@@ -23,14 +25,55 @@ app.get('/', (req, res) => {
     return res.status(200).send("Plwease sign up first !!");
 })
 
-app.post('/signup', (req, res) => {
+app.post('/signup', async (req, res) => {
+    try {
+        const { name, email } = req.body;
 
-    const { name, email, password } = req.body;
+        // assusming validation will be done by Mongo itself using model constraints
+        const newUser = await User.create(req.body);
 
+        const token = jwt.sign({ userId: newUser.id, email: newUser.email },
+            jwtSecret,
+            { expiresIn: "1h" }
+        );
+
+        return res.status(201).json({
+            success: true,
+            data: {
+                name,
+                email,
+                token
+            },
+        });
+    } catch (error) {
+        console.warn(error);
+        return res.status(500).send({ message: error.message });
+    }
+});
+
+app.get('/accessResource', (req, res) => {
+    try {
+        const token = req.headers.authorization.split(' ')[1];
+        //Authorization: 'Bearer TOKEN'
+        if (!token) {
+            res.status(400).json({ success: false, message: "Error! Token was not provided." });
+        }
+        //Decoding the token
+        const decodedToken = jwt.verify(token, jwtSecret);
     
-
-    return res.status(200).send("Plwease sign up first !!");
+        res.status(200).json({
+            success: true, 
+            data: {
+                userId: decodedToken.userId,
+                email: decodedToken.email
+            }
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({message: error.message});
+    }
 })
+
 
 mongoose
     .connect(mongodbUrl)
