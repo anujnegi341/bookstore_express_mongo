@@ -20,7 +20,16 @@ app.use('/books', booksRoute);
 
 app.get('/', (req, res) => {
     console.log(req);
-    return res.status(200).send("High thereerer!!");
+    return res.status(200).send("Plwease sign up first !!");
+})
+
+app.post('/signup', (req, res) => {
+
+    const { name, email, password } = req.body;
+
+    
+
+    return res.status(200).send("Plwease sign up first !!");
 })
 
 mongoose
