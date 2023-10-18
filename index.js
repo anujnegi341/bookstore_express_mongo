@@ -52,32 +52,38 @@ app.post('/signup', async (req, res) => {
 });
 
 app.post("/login", async (req, res) => {
+    try {
 
-    let { email, password } = req.body;
+        let { email, password } = req.body;
 
-    let existingUser;
-    existingUser = await User.findOne({ email: email });
-    if (!existingUser || existingUser.password != password) {
-      throw new Error("Wrong details please check at once");
+        let existingUser;
+        
+        existingUser = await User.findOne({ email: email });
+        if (!existingUser || existingUser.password != password) {
+            throw new Error("Wrong details please check at once");
+        }
+
+        let token;
+        //Creating jwt token
+        token = jwt.sign(
+            { userId: existingUser.id, email: existingUser.email },
+            jwtSecret,
+            { expiresIn: "1h" }
+        );
+
+        res.status(200)
+            .json({
+                success: true,
+                data: {
+                    userId: existingUser.id,
+                    email: existingUser.email,
+                    token: token,
+                },
+            });
+    } catch (error) {
+        console.warn(error);
+        return res.status(500).send({ message: error.message });
     }
-
-    let token;
-    //Creating jwt token
-    token = jwt.sign(
-      { userId: existingUser.id, email: existingUser.email },
-      jwtSecret,
-      { expiresIn: "1h" }
-    );
-
-    res.status(200)
-    .json({
-        success: true,
-        data: {
-            userId: existingUser.id,
-            email: existingUser.email,
-            token: token,
-        },
-    });
 });
 
 app.get('/accessResource', (req, res) => {
@@ -89,9 +95,9 @@ app.get('/accessResource', (req, res) => {
         }
         //Decoding the token
         const decodedToken = jwt.verify(token, jwtSecret);
-    
+
         res.status(200).json({
-            success: true, 
+            success: true,
             data: {
                 userId: decodedToken.userId,
                 email: decodedToken.email
@@ -99,7 +105,7 @@ app.get('/accessResource', (req, res) => {
         });
     } catch (error) {
         console.log(error);
-        res.status(500).send({message: error.message});
+        res.status(500).send({ message: error.message });
     }
 })
 
