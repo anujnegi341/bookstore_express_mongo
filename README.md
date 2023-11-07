@@ -17,5 +17,5 @@ And maybe other libraries that enable us to perform repetetive task easily.
 IMPORTANT: YOU WILL NEED TO SET A CONFIG FILE WITH PORT AND MONGODBURL SERCRETS
 
 RUN : 
-npm i
+npm i  return
 npm run dev
